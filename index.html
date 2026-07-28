@@ -3,418 +3,791 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>India's Got Latent - Apple Cinema</title>
+    <title>India's Got Latent — Apple TV Cinema</title>
     
     <!-- Plyr CSS -->
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     
     <style>
-        /* =========================================
-           APPLE TV / GLASSMORPHISM THEMING
-        ========================================= */
+        /* ==========================================================================
+           1. APPLE TV DESIGN SYSTEM & VARIABLES
+           ========================================================================== */
         :root {
-            --plyr-color-main: #0071e3; /* Apple Blue */
-            --apple-bg: #0d0d0f;
-            --apple-glass: rgba(30, 30, 35, 0.65);
-            --apple-border: rgba(255, 255, 255, 0.12);
+            --apple-accent: #0071e3;
+            --apple-accent-glow: rgba(0, 113, 227, 0.45);
+            --apple-bg: #050507;
+            --apple-card-bg: rgba(255, 255, 255, 0.04);
+            --apple-card-border: rgba(255, 255, 255, 0.08);
+            --apple-glass-bg: rgba(20, 20, 25, 0.65);
+            --apple-glass-border: rgba(255, 255, 255, 0.12);
+            --apple-radius-lg: 24px;
+            --apple-radius-md: 14px;
+            --apple-radius-sm: 8px;
+            --apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+            --apple-ease: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            font-family: var(--apple-font);
             background-color: var(--apple-bg);
             color: #f5f5f7;
-            margin: 0;
-            padding: 30px 20px;
-            box-sizing: border-box;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            padding: 40px 20px;
+            overflow-x: hidden;
         }
 
-        h2 {
-            font-size: 1.6rem;
+        /* Ambient Screen Glow (Apple TV Cinema Effect) */
+        .ambient-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -60%);
+            width: 80%;
+            height: 60%;
+            background: radial-gradient(circle, rgba(0, 113, 227, 0.18) 0%, rgba(138, 43, 226, 0.08) 40%, transparent 70%);
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+            transition: opacity 1s ease;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1240px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Header */
+        .tv-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+        }
+
+        .tv-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
             font-weight: 600;
-            margin-bottom: 25px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #d2d2d7;
+            backdrop-filter: blur(10px);
+        }
+
+        .tv-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background-color: #34c759;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #34c759;
+        }
+
+        .tv-title {
+            font-size: 1.8rem;
+            font-weight: 700;
             letter-spacing: -0.5px;
-            background: linear-gradient(180deg, #ffffff, #a1a1a6);
+            background: linear-gradient(180deg, #ffffff 0%, #a1a1a6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* Player Container */
+        /* ==========================================================================
+           2. PLAYER GLASS WRAPPER & LAYOUT
+           ========================================================================== */
         .player-wrapper {
             display: flex;
             flex-direction: column;
             width: 100%;
-            max-width: 1180px;
-            background: var(--apple-glass);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            border: 1px solid var(--apple-border);
-            border-radius: 18px;
+            background: var(--apple-glass-bg);
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border: 1px solid var(--apple-glass-border);
+            border-radius: var(--apple-radius-lg);
             overflow: hidden;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8),
+                        0 0 0 1px rgba(255, 255, 255, 0.05);
+            transition: transform 0.4s var(--apple-ease);
         }
 
-        @media (min-width: 850px) {
+        @media (min-width: 900px) {
             .player-wrapper {
                 flex-direction: row;
             }
         }
 
-        .video-wrapper {
-            flex: 2.6; 
+        /* Video Stage */
+        .video-stage {
+            flex: 2.8;
             position: relative;
             background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
+            aspect-ratio: 16/9;
         }
 
-        /* =========================================
-           APPLE LOADING OVERLAY
-        ========================================= */
-        .premium-loader-overlay {
+        /* Smooth Hide for Video until metadata is ready (Fixes Flash/Glitch) */
+        .video-stage video {
+            opacity: 0;
+            transition: opacity 0.6s var(--apple-ease);
+        }
+
+        .video-stage.is-ready video {
+            opacity: 1;
+        }
+
+        /* Skeleton Screen while Video First Load */
+        .video-skeleton {
             position: absolute;
             inset: 0;
-            background: rgba(0, 0, 0, 0.45);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            z-index: 50;
+            background: linear-gradient(90deg, #0d0d11 25%, #181820 50%, #0d0d11 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 2s infinite linear;
+            z-index: 2;
+            pointer-events: none;
+            transition: opacity 0.5s var(--apple-ease);
+        }
+
+        .video-stage.is-ready .video-skeleton {
+            opacity: 0;
+        }
+
+        @keyframes skeleton-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ==========================================================================
+           3. APPLE TV-STYLE HUD OVERLAYS & PRELOADER
+           ========================================================================== */
+        
+        /* Premium Loading Screen Overlay */
+        .apple-loader-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 5, 8, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 40;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.4s var(--apple-ease);
         }
 
-        .is-buffering .premium-loader-overlay {
+        .video-stage.is-buffering .apple-loader-overlay {
             opacity: 1;
+            pointer-events: auto;
         }
 
-        /* Minimal Ring Spinner */
-        .apple-spinner {
-            width: 38px;
-            height: 38px;
-            border: 3px solid rgba(255, 255, 255, 0.15);
-            border-top-color: #ffffff;
-            border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-            margin-bottom: 20px;
+        /* Dynamic Ring Spinner */
+        .apple-spinner-ring {
+            width: 54px;
+            height: 54px;
+            position: relative;
+            margin-bottom: 24px;
         }
 
-        /* Track Container */
-        .apple-progress-container {
-            width: 200px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.15);
+        .apple-spinner-ring svg {
+            width: 100%;
+            height: 100%;
+            animation: rotate-spinner 1.4s linear infinite;
+        }
+
+        .apple-spinner-ring circle {
+            fill: none;
+            stroke-width: 4;
+            stroke-linecap: round;
+        }
+
+        .apple-spinner-ring .bg {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        .apple-spinner-ring .meter {
+            stroke: url(#apple-grad);
+            stroke-dasharray: 120;
+            stroke-dashoffset: 40;
+            animation: dash-spinner 1.4s ease-in-out infinite;
+        }
+
+        @keyframes rotate-spinner {
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes dash-spinner {
+            0% { stroke-dashoffset: 110; }
+            50% { stroke-dashoffset: 30; }
+            100% { stroke-dashoffset: 110; }
+        }
+
+        /* Apple TV Glossy Buffer Progress Track */
+        .apple-progress-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 220px;
+        }
+
+        .apple-progress-track {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.12);
             border-radius: 10px;
             overflow: hidden;
             position: relative;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
         }
 
-        .apple-progress-bar {
+        .apple-progress-fill {
             height: 100%;
             width: 0%;
-            background: #ffffff;
+            background: linear-gradient(90deg, #0071e3, #30b0ff);
             border-radius: 10px;
-            transition: width 0.2s ease;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+            transition: width 0.25s var(--apple-ease);
+            box-shadow: 0 0 12px var(--apple-accent-glow);
         }
 
-        .apple-progress-text {
-            margin-top: 10px;
-            font-size: 12px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.7);
-            letter-spacing: 0.5px;
+        .apple-progress-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.75);
+            letter-spacing: 1px;
+            font-variant-numeric: tabular-nums;
         }
 
-        @keyframes spin { 
-            100% { transform: rotate(360deg); } 
+        /* TV HUD Badges (Skip Forward / Rewind / Volume Popups) */
+        .tv-hud-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.7);
+            background: rgba(20, 20, 25, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 16px 28px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 35;
+            transition: all 0.3s var(--apple-ease);
         }
 
-        .plyr--loading .plyr__video-wrapper::before {
-            display: none !important;
+        .tv-hud-badge.is-active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
 
-        /* Custom Skip Controls Overlay */
+        /* Quick Skip Buttons Overlay (On-Hover) */
         .apple-skip-btn {
             position: absolute;
             top: 50%;
-            transform: translateY(-50%);
+            transform: translateY(-50%) scale(0.9);
             z-index: 30;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #fff;
-            width: 44px;
-            height: 44px;
+            color: #ffffff;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             opacity: 0;
-            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0.3s var(--apple-ease);
         }
 
-        .video-wrapper:hover .apple-skip-btn {
-            opacity: 0.8;
+        .video-stage:hover .apple-skip-btn {
+            opacity: 0.85;
+            transform: translateY(-50%) scale(1);
         }
 
         .apple-skip-btn:hover {
             opacity: 1 !important;
-            transform: translateY(-50%) scale(1.1);
-            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-50%) scale(1.12) !important;
+            background: rgba(255, 255, 255, 0.22);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
         }
 
-        .skip-left { left: 20px; }
-        .skip-right { right: 20px; }
+        .apple-skip-btn:active {
+            transform: translateY(-50%) scale(0.98) !important;
+        }
 
-        /* =========================================
-           PLAYLIST UI
-        ========================================= */
-        .playlist-container {
-            flex: 1; 
-            background: rgba(18, 18, 22, 0.5);
-            padding: 24px;
-            border-left: 1px solid var(--apple-border);
+        .skip-prev { left: 24px; }
+        .skip-next { right: 24px; }
+
+        /* ==========================================================================
+           4. PLYR UI OVERRIDES (APPLE CINEMA STYLING)
+           ========================================================================== */
+        .plyr {
+            --plyr-color-main: var(--apple-accent);
+            --plyr-video-control-color: #ffffff;
+            --plyr-video-control-color-hover: #ffffff;
+            --plyr-control-radius: 8px;
+            font-family: var(--apple-font);
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+        }
+
+        .plyr__controls {
+            background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.85) 100%) !important;
+            padding: 20px 18px 14px 18px !important;
+            gap: 12px;
+        }
+
+        /* Apple-style Progress Bar within Plyr */
+        .plyr__progress__container {
+            position: relative;
+        }
+
+        .plyr__progress input[type="range"] {
+            cursor: pointer;
+        }
+
+        /* Hide Plyr's default loading spinner to avoid double spinners */
+        .plyr--loading .plyr__video-wrapper::before {
+            display: none !important;
+        }
+
+        /* ==========================================================================
+           5. EPISODES PLAYLIST & FOCUS ENGINE (APPLE TV STYLE)
+           ========================================================================== */
+        .playlist-stage {
+            flex: 1.1;
+            background: rgba(10, 10, 14, 0.4);
+            padding: 28px 22px;
+            border-left: 1px solid var(--apple-glass-border);
             display: flex;
             flex-direction: column;
         }
 
-        .playlist-header {
+        .playlist-title-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .playlist-heading {
             font-size: 0.85rem;
-            font-weight: 600;
-            margin: 0 0 16px 0;
+            font-weight: 700;
             color: #86868b;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 1.2px;
         }
 
-        .playlist-items {
+        .episodes-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
             overflow-y: auto;
             max-height: 480px;
+            padding-right: 4px;
         }
 
-        .playlist-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 14px;
-            border-radius: 12px;
-            transition: all 0.25s ease;
+        /* Scrollbar */
+        .episodes-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .episodes-list::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
         }
 
-        .playlist-item.active {
-            border-color: rgba(0, 113, 227, 0.5);
-            background: rgba(0, 113, 227, 0.12);
-        }
-
-        .video-title {
-            font-size: 0.9rem;
-            font-weight: 500;
-            line-height: 1.35;
+        /* Apple TV Card Focus Engine */
+        .ep-card {
+            position: relative;
+            background: var(--apple-card-bg);
+            border: 1px solid var(--apple-card-border);
+            padding: 16px;
+            border-radius: var(--apple-radius-md);
             cursor: pointer;
-            color: #d2d2d7;
+            transition: all 0.35s var(--apple-ease);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ep-card:hover {
+            transform: translateY(-3px) scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.15);
+        }
+
+        .ep-card.is-active {
+            background: rgba(0, 113, 227, 0.15);
+            border-color: var(--apple-accent);
+            box-shadow: 0 10px 30px rgba(0, 113, 227, 0.25), 0 0 0 1px var(--apple-accent);
+        }
+
+        .ep-card.is-active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 4px;
+            background: var(--apple-accent);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 10px var(--apple-accent);
+        }
+
+        .ep-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .ep-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.35;
+            color: #e5e5e7;
             transition: color 0.2s;
         }
 
-        .playlist-item.active .video-title {
+        .ep-card.is-active .ep-title {
             color: #ffffff;
-            font-weight: 600;
         }
 
-        .server-list {
+        .ep-badge-4k {
+            background: linear-gradient(135deg, #ffd700, #ffa500);
+            color: #000000;
+            font-weight: 800;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        .server-pills {
             display: flex;
             gap: 8px;
-            margin-top: 10px;
             flex-wrap: wrap;
         }
 
-        .server-badge {
-            font-size: 0.7rem;
-            background: rgba(255, 255, 255, 0.08);
+        .server-pill {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: var(--apple-radius-sm);
+            background: rgba(255, 255, 255, 0.06);
             color: #a1a1a6;
-            padding: 4px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.25s var(--apple-ease);
         }
 
-        .server-badge.active {
-            background: #0071e3;
-            color: #fff;
+        .server-pill:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+
+        .server-pill.is-active {
+            background: var(--apple-accent);
+            color: #ffffff;
+            border-color: var(--apple-accent);
+            box-shadow: 0 0 12px var(--apple-accent-glow);
         }
     </style>
 </head>
 <body>
 
-    <h2>India’s Got Latent</h2>
+    <!-- Ambient Cinema Glow -->
+    <div class="ambient-glow" id="ambient-glow"></div>
 
-    <div class="player-wrapper">
+    <div class="main-container">
         
-        <!-- Video Wrapper -->
-        <div class="video-wrapper" id="video-wrapper">
-            
-            <!-- Apple Skip Buttons -->
-            <button class="apple-skip-btn skip-left" onclick="skipTime(-10)" title="Rewind 10s">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
-            </button>
-            <button class="apple-skip-btn skip-right" onclick="skipTime(10)" title="Forward 10s">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
-            </button>
+        <!-- TV Top Bar -->
+        <header class="tv-header">
+            <h1 class="tv-title">India’s Got Latent</h1>
+            <span class="tv-badge">Apple Cinema Edition</span>
+        </header>
 
-            <!-- Loading Overlay -->
-            <div class="premium-loader-overlay">
-                <div class="apple-spinner"></div>
-                <div class="apple-progress-container">
-                    <div class="apple-progress-bar" id="premium-progress-bar"></div>
+        <!-- Main TV Player Card -->
+        <main class="player-wrapper">
+            
+            <!-- Video Stage -->
+            <div class="video-stage" id="video-stage">
+                
+                <!-- Skeleton Shimmer Loader (Prevents initial jump/glitch) -->
+                <div class="video-skeleton"></div>
+
+                <!-- Custom Skip Buttons (On Hover) -->
+                <button class="apple-skip-btn skip-prev" onclick="handleSkip(-10)" title="Rewind 10 seconds">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                </button>
+                <button class="apple-skip-btn skip-next" onclick="handleSkip(10)" title="Forward 10 seconds">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                </button>
+
+                <!-- TV HUD Toast Notification Badge -->
+                <div class="tv-hud-badge" id="tv-hud">
+                    <span id="hud-icon">⏩</span>
+                    <span id="hud-text">+10s</span>
                 </div>
-                <div class="apple-progress-text" id="premium-progress-text">0%</div>
+
+                <!-- Apple TV Dynamic Preloader & Buffer Track -->
+                <div class="apple-loader-overlay">
+                    <div class="apple-spinner-ring">
+                        <svg viewBox="0 0 50 50">
+                            <defs>
+                                <linearGradient id="apple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#0071e3"/>
+                                    <stop offset="100%" stop-color="#30b0ff"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="bg" cx="25" cy="25" r="20"></circle>
+                            <circle class="meter" cx="25" cy="25" r="20"></circle>
+                        </svg>
+                    </div>
+                    <div class="apple-progress-box">
+                        <div class="apple-progress-track">
+                            <div class="apple-progress-fill" id="apple-buffer-bar"></div>
+                        </div>
+                        <div class="apple-progress-status" id="apple-buffer-text">0%</div>
+                    </div>
+                </div>
+
+                <!-- HTML5 Video Element -->
+                <video id="player" playsinline controls preload="metadata">
+                    <source src="https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA's%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv" type="video/webm" />
+                </video>
             </div>
-            
-            <!-- Video Container -->
-            <video id="player" playsinline controls>
-                <source src="https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA's%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv" type="video/webm" />
-            </video>
-        </div>
 
-        <!-- Playlist Section -->
-        <div class="playlist-container">
-            <h3 class="playlist-header">Episodes</h3>
-            
-            <div class="playlist-items">
-                <div class="playlist-item active" id="ep3">
-                    <div class="video-title" onclick="playEpisode('ep3', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA\'s%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv', 'video/webm')">
-                        S2 Bonus EP1 (4K Ultra HD)
-                    </div>
-                    <div class="server-list">
-                        <span class="server-badge active" onclick="playEpisode('ep3', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA\'s%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv', 'video/webm', this)">Server 1 (GitHub)</span>
-                    </div>
+            <!-- Episodes Playlist -->
+            <aside class="playlist-stage">
+                <div class="playlist-title-box">
+                    <span class="playlist-heading">Episodes</span>
+                    <span style="font-size: 0.75rem; color: #86868b;">3 Available</span>
                 </div>
 
-                <div class="playlist-item" id="ep1">
-                    <div class="video-title" onclick="playEpisode('ep1', 'https://github.com/Akshat4739/data/raw/refs/heads/main/INDIA%E2%80%99S%20GOT%20LATENT%20S2%20Bonus%20EP1%20ft%20%20Raghav%20Juyal,%20Munawar,%20Niharika%20NM,%20Rohan%20Joshi%20MEMBERS%20ONLY%20216.mp4', 'video/mp4')">
-                        S2 Bonus EP1 (Standard HD)
+                <div class="episodes-list">
+                    
+                    <!-- Episode 3 (4K HD) -->
+                    <div class="ep-card is-active" id="ep3" onclick="switchEpisode('ep3', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA\'s%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv', 'video/webm')">
+                        <div class="ep-header">
+                            <div class="ep-title">S2 Bonus EP1 ft. Raghav Juyal, Munawar, Niharika NM</div>
+                            <span class="ep-badge-4k">4K UHD</span>
+                        </div>
+                        <div class="server-pills">
+                            <span class="server-pill is-active">Server 1 (GitHub 4K)</span>
+                        </div>
                     </div>
-                    <div class="server-list">
-                        <span class="server-badge active" onclick="playEpisode('ep1', 'https://github.com/Akshat4739/data/raw/refs/heads/main/INDIA%E2%80%99S%20GOT%20LATENT%20S2%20Bonus%20EP1%20ft%20%20Raghav%20Juyal,%20Munawar,%20Niharika%20NM,%20Rohan%20Joshi%20MEMBERS%20ONLY%20216.mp4', 'video/mp4', this)">Server 1 (GitHub)</span>
-                    </div>
-                </div>
 
-                <div class="playlist-item" id="ep2">
-                    <div class="video-title" onclick="playEpisode('ep2', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm')">
-                        E03 Latent BTS
+                    <!-- Episode 1 (SD) -->
+                    <div class="ep-card" id="ep1" onclick="switchEpisode('ep1', 'https://github.com/Akshat4739/data/raw/refs/heads/main/INDIA%E2%80%99S%20GOT%20LATENT%20S2%20Bonus%20EP1%20ft%20%20Raghav%20Juyal,%20Munawar,%20Niharika%20NM,%20Rohan%20Joshi%20MEMBERS%20ONLY%20216.mp4', 'video/mp4')">
+                        <div class="ep-header">
+                            <div class="ep-title">S2 Bonus EP1 (Standard HD)</div>
+                        </div>
+                        <div class="server-pills">
+                            <span class="server-pill is-active">Server 1 (GitHub)</span>
+                        </div>
                     </div>
-                    <div class="server-list">
-                        <span class="server-badge active" onclick="playEpisode('ep2', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm', this)">Server 1</span>
-                        <span class="server-badge" onclick="playEpisode('ep2', 'https://archive.org/download/e-03-latent/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm', this)">Server 2</span>
-                    </div>
-                </div>
-            </div>
-        </div>
 
+                    <!-- Episode 2 (BTS) -->
+                    <div class="ep-card" id="ep2" onclick="switchEpisode('ep2', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm')">
+                        <div class="ep-header">
+                            <div class="ep-title">E03 Latent BTS ft. Raghu Ram, Tanmay Bhat</div>
+                        </div>
+                        <div class="server-pills">
+                            <span class="server-pill is-active" onclick="event.stopPropagation(); switchEpisode('ep2', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm', this)">Server 1</span>
+                            <span class="server-pill" onclick="event.stopPropagation(); switchEpisode('ep2', 'https://archive.org/download/e-03-latent/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm', this)">Server 2 (Archive)</span>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+
+        </main>
     </div>
 
     <!-- Scripts -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         let player;
-        let bufferInterval;
+        let hudTimeout;
+        let bufferCheckInterval;
+
+        const stage = document.getElementById('video-stage');
+        const bufferBar = document.getElementById('apple-buffer-bar');
+        const bufferText = document.getElementById('apple-buffer-text');
+        const hud = document.getElementById('tv-hud');
+        const hudIcon = document.getElementById('hud-icon');
+        const hudText = document.getElementById('hud-text');
 
         document.addEventListener('DOMContentLoaded', () => {
+            // 1. Initialize Plyr with optimized Apple Cinema controls
             player = new Plyr('#player', {
                 controls: [
                     'play-large', 'play', 'progress', 'current-time', 
                     'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'
                 ],
-                settings: ['speed', 'loop']
+                settings: ['speed'],
+                keyboard: { focused: true, global: true },
+                tooltips: { controls: true, seek: true }
             });
 
-            const videoWrapper = document.getElementById('video-wrapper');
-            const progressBar = document.getElementById('premium-progress-bar');
-            const progressText = document.getElementById('premium-progress-text');
+            // 2. Glitch-Free Readiness Handling
+            player.on('ready', () => {
+                // Preload checks & reveal smooth transition
+                setTimeout(() => {
+                    stage.classList.add('is-ready');
+                }, 400);
+            });
 
-            function updateBufferUI(percent) {
-                const p = Math.min(Math.max(Math.floor(percent), 0), 100);
-                progressBar.style.width = p + '%';
-                progressText.innerText = p + '%';
-            }
-
-            // Real Buffer-Tracking Engine
-            function trackActualBuffering() {
+            // 3. Smooth Dynamic Buffer Calculation
+            function updateBufferProgress() {
                 const media = player.media;
                 if (!media) return;
 
                 if (media.buffered.length > 0 && media.duration > 0) {
-                    // Get highest buffered time chunk
                     const bufferedEnd = media.buffered.end(media.buffered.length - 1);
                     const duration = media.duration;
-                    const percent = (bufferedEnd / duration) * 100;
+                    const percent = Math.min(Math.round((bufferedEnd / duration) * 100), 100);
 
-                    updateBufferUI(percent);
+                    bufferBar.style.width = percent + '%';
+                    bufferText.innerText = percent + '%';
 
-                    if (percent >= 99 || media.readyState >= 3) {
-                        finishBuffering();
+                    if (percent >= 98 || media.readyState >= 3) {
+                        hideBufferingState();
                     }
                 }
             }
 
-            function startBuffering() {
-                videoWrapper.classList.add('is-buffering');
-                clearInterval(bufferInterval);
-                bufferInterval = setInterval(trackActualBuffering, 200);
+            function showBufferingState() {
+                stage.classList.add('is-buffering');
+                clearInterval(bufferCheckInterval);
+                bufferCheckInterval = setInterval(updateBufferProgress, 150);
             }
 
-            function finishBuffering() {
-                updateBufferUI(100);
-                clearInterval(bufferInterval);
+            function hideBufferingState() {
+                bufferBar.style.width = '100%';
+                bufferText.innerText = '100%';
+                clearInterval(bufferCheckInterval);
+                
                 setTimeout(() => {
-                    videoWrapper.classList.remove('is-buffering');
+                    stage.classList.remove('is-buffering');
                 }, 300);
             }
 
-            player.on('waiting', startBuffering);
-            player.on('playing', finishBuffering);
-            player.on('canplay', finishBuffering);
-            player.on('progress', trackActualBuffering);
+            // Bind player events to eliminate buffer stutter
+            player.on('waiting', showBufferingState);
+            player.on('seeking', showBufferingState);
+            player.on('playing', hideBufferingState);
+            player.on('canplay', hideBufferingState);
+            player.on('progress', updateBufferProgress);
+
+            // 4. Keyboard Shortcuts HUD Integration
+            document.addEventListener('keydown', (e) => {
+                if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+                if (e.key === 'ArrowRight') {
+                    handleSkip(10);
+                } else if (e.key === 'ArrowLeft') {
+                    handleSkip(-10);
+                }
+            });
         });
 
-        // Skip Handler (Rewind / Fast Forward)
-        function skipTime(seconds) {
-            if (player) {
-                player.forward(seconds);
+        // 5. TV HUD Toast Trigger
+        function triggerHUD(icon, text) {
+            hudIcon.innerText = icon;
+            hudText.innerText = text;
+            hud.classList.add('is-active');
+
+            clearTimeout(hudTimeout);
+            hudTimeout = setTimeout(() => {
+                hud.classList.remove('is-active');
+            }, 900);
+        }
+
+        // 6. Smooth Skip Handler
+        function handleSkip(seconds) {
+            if (!player) return;
+            player.forward(seconds);
+            if (seconds > 0) {
+                triggerHUD('⏩', `+${seconds}s`);
+            } else {
+                triggerHUD('⏪', `${seconds}s`);
             }
         }
 
-        // Episode Switcher
-        function playEpisode(epId, src, type, badgeElement = null) {
-            document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(epId).classList.add('active');
+        // 7. Episode & Server Switcher (Seamless transition without glitching)
+        function switchEpisode(epId, src, type, pillElement = null) {
+            // Update active episode card state
+            document.querySelectorAll('.ep-card').forEach(el => el.classList.remove('is-active'));
+            const targetCard = document.getElementById(epId);
+            if (targetCard) targetCard.classList.add('is-active');
 
-            if (badgeElement) {
-                const parent = badgeElement.closest('.server-list');
-                parent.querySelectorAll('.server-badge').forEach(el => el.classList.remove('active'));
-                badgeElement.classList.add('active');
+            // Update active server pill
+            if (pillElement) {
+                const parent = pillElement.closest('.server-pills');
+                parent.querySelectorAll('.server-pill').forEach(el => el.classList.remove('is-active'));
+                pillElement.classList.add('is-active');
             }
 
-            const videoWrapper = document.getElementById('video-wrapper');
-            videoWrapper.classList.add('is-buffering');
+            // Smooth loader trigger
+            stage.classList.remove('is-ready');
+            stage.classList.add('is-buffering');
+            bufferBar.style.width = '0%';
+            bufferText.innerText = '0%';
 
+            // Switch source safely
             player.source = {
                 type: 'video',
                 sources: [{ src: src, type: type }]
             };
 
-            player.play().catch(() => {});
+            player.play().then(() => {
+                stage.classList.add('is-ready');
+            }).catch(() => {
+                // Handles autoplay block on modern browsers gracefully
+                stage.classList.add('is-ready');
+            });
         }
     </script>
 </body>
