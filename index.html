@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India's Got Latent - Premium Player</title>
+    
+    <!-- Plyr CSS -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            font-weight: 500;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        /* Main layout wrapper */
+        .player-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1200px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Desktop Layout (Side by Side) */
+        @media (min-width: 800px) {
+            .player-wrapper {
+                flex-direction: row;
+            }
+        }
+
+        .video-wrapper {
+            flex: 2.5; 
+            position: relative;
+            background: #000;
+        }
+
+        /* =========================================
+           PREMIUM 0-100% LOADING UI (OVERLAY)
+        ========================================= */
+        .premium-loader-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .is-buffering .premium-loader-overlay {
+            opacity: 1;
+        }
+
+        /* The Spinner */
+        .premium-spinner {
+            width: 45px; height: 45px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00a8ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 25px;
+        }
+
+        /* The Bar Container */
+        .premium-progress-container {
+            width: 220px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        /* The Fill */
+        .premium-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00a8ff, #00ff88);
+            border-radius: 10px;
+            transition: width 0.2s ease-out;
+            box-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+        }
+
+        /* The Text (0% to 100%) */
+        .premium-progress-text {
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 2px;
+            font-family: monospace;
+        }
+
+        @keyframes spin { 
+            100% { transform: rotate(360deg); } 
+        }
+
+        /* Hide Plyr's default loading spinner */
+        .plyr--loading .plyr__video-wrapper::before {
+            display: none !important;
+        }
+
+        /* =========================================
+           PLAYLIST & SERVER SELECTION UI
+        ========================================= */
+        .playlist-container {
+            flex: 1; 
+            background: #151515;
+            padding: 20px;
+            border-left: 1px solid #2a2a2a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .playlist-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #2a2a2a;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .playlist-items {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        .playlist-item {
+            background: #222;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .playlist-item.active {
+            border-color: #00a8ff;
+            background: #1e293b;
+        }
+
+        .video-title {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+
+        .video-title:hover {
+            color: #fff;
+        }
+
+        .playlist-item.active .video-title {
+            color: #00a8ff;
+            font-weight: 600;
+        }
+
+        .server-list {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .server-badge {
+            font-size: 0.75rem;
+            background: #333;
+            color: #aaa;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .server-badge:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        .server-badge.active {
+            background: #00a8ff;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(0, 168, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <h2>INDIA’S GOT LATENT</h2>
+
+    <div class="player-wrapper">
+        
+        <!-- Video Player Section -->
+        <div class="video-wrapper" id="video-wrapper">
+            
+            <!-- Premium Loading Overlay -->
+            <div class="premium-loader-overlay">
+                <div class="premium-spinner"></div>
+                <div class="premium-progress-container">
+                    <div class="premium-progress-bar" id="premium-progress-bar"></div>
+                </div>
+                <div class="premium-progress-text" id="premium-progress-text">0%</div>
+            </div>
+            
+            <!-- Default Video (4K Episode 3) -->
+            <video id="player" playsinline controls>
+                <source src="https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA's%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv" type="video/webm" />
+            </video>
+        </div>
+
+        <!-- Playlist & Servers Section -->
+        <div class="playlist-container">
+            <h3 class="playlist-header">Episodes</h3>
+            
+            <div class="playlist-items">
+                
+                <!-- Episode 3 (4K MKV Direct Upload) -->
+                <div class="playlist-item active" id="ep3">
+                    <div class="video-title" onclick="playEpisode('ep3', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA\'s%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv', 'video/webm')">
+                        S2 Bonus EP1 4K ft. Raghav Juyal, Munawar, Niharika NM, Rohan Joshi
+                    </div>
+                    <div class="server-list">
+                        <span class="server-badge active" onclick="playEpisode('ep3', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA\'s%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv', 'video/webm', this)">Server 1 (GitHub 4K)</span>
+                    </div>
+                </div>
+
+                <!-- Episode 1 -->
+                <div class="playlist-item" id="ep1">
+                    <div class="video-title" onclick="playEpisode('ep1', 'https://github.com/Akshat4739/data/raw/refs/heads/main/INDIA%E2%80%99S%20GOT%20LATENT%20S2%20Bonus%20EP1%20ft%20%20Raghav%20Juyal,%20Munawar,%20Niharika%20NM,%20Rohan%20Joshi%20MEMBERS%20ONLY%20216.mp4', 'video/mp4')">
+                        S2 Bonus EP1 ft. Raghav Juyal, Munawar, Niharika NM, Rohan Joshi (SD)
+                    </div>
+                    <div class="server-list">
+                        <span class="server-badge active" onclick="playEpisode('ep1', 'https://github.com/Akshat4739/data/raw/refs/heads/main/INDIA%E2%80%99S%20GOT%20LATENT%20S2%20Bonus%20EP1%20ft%20%20Raghav%20Juyal,%20Munawar,%20Niharika%20NM,%20Rohan%20Joshi%20MEMBERS%20ONLY%20216.mp4', 'video/mp4', this)">Server 1 (GitHub)</span>
+                    </div>
+                </div>
+
+                <!-- Episode 2 -->
+                <div class="playlist-item" id="ep2">
+                    <div class="video-title" onclick="playEpisode('ep2', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm')">
+                        E03 Latent BTS ft. Raghu Ram, Tanmay Bhat, Vishal Dadlani
+                    </div>
+                    <div class="server-list">
+                        <span class="server-badge active" onclick="playEpisode('ep2', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm', this)">Server 1 (GitHub)</span>
+                        <span class="server-badge" onclick="playEpisode('ep2', 'https://archive.org/download/e-03-latent/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm', this)">Server 2 (Archive)</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Plyr JS Initialization -->
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script>
+        let player;
+        let bufferInterval;
+        let currentBuffer = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Plyr
+            player = new Plyr('#player', {
+                controls: [
+                    'play-large', 'play', 'progress', 'current-time', 
+                    'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'
+                ],
+                settings: ['speed', 'loop']
+            });
+
+            // Premium Loader / Buffer Logic
+            const videoWrapper = document.getElementById('video-wrapper');
+            const progressBar = document.getElementById('premium-progress-bar');
+            const progressText = document.getElementById('premium-progress-text');
+
+            function updateBufferUI(percent) {
+                const p = Math.floor(percent);
+                progressBar.style.width = p + '%';
+                progressText.innerText = p + '%';
+            }
+
+            function startBuffering() {
+                if(videoWrapper.classList.contains('is-buffering')) return;
+
+                videoWrapper.classList.add('is-buffering');
+                currentBuffer = 0;
+                updateBufferUI(0);
+                
+                clearInterval(bufferInterval);
+                
+                bufferInterval = setInterval(() => {
+                    if (currentBuffer < 98) {
+                        let increment = (100 - currentBuffer) * 0.15;
+                        currentBuffer += Math.max(increment, 1);
+                        if (currentBuffer > 99) currentBuffer = 99;
+                        updateBufferUI(currentBuffer);
+                    }
+                }, 150);
+            }
+
+            function finishBuffering() {
+                if (!videoWrapper.classList.contains('is-buffering')) return;
+                
+                updateBufferUI(100);
+                clearInterval(bufferInterval);
+                
+                setTimeout(() => {
+                    videoWrapper.classList.remove('is-buffering');
+                }, 350); 
+            }
+
+            player.on('waiting', startBuffering);
+            player.on('playing', finishBuffering);
+            player.on('canplay', finishBuffering);
+            player.on('pause', finishBuffering); 
+        });
+
+        // Playlist and Server Switching Logic
+        function playEpisode(epId, src, type, badgeElement = null) {
+            document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(epId).classList.add('active');
+
+            if (badgeElement) {
+                const parent = badgeElement.closest('.server-list');
+                parent.querySelectorAll('.server-badge').forEach(el => el.classList.remove('active'));
+                badgeElement.classList.add('active');
+            } else {
+                const firstBadge = document.querySelector(`#${epId} .server-badge`);
+                if (firstBadge) {
+                    document.querySelectorAll(`#${epId} .server-badge`).forEach(el => el.classList.remove('active'));
+                    firstBadge.classList.add('active');
+                }
+            }
+
+            const videoWrapper = document.getElementById('video-wrapper');
+            videoWrapper.classList.remove('is-buffering');
+            setTimeout(() => { player.elements.container.dispatchEvent(new Event('waiting')); }, 10);
+
+            player.source = {
+                type: 'video',
+                sources: [
+                    {
+                        src: src,
+                        type: type, 
+                    }
+                ]
+            };
+
+            player.play().catch(error => {
+                console.log("Autoplay prevented by browser.");
+            });
+        }
+    </script>
+
+</body>
+</html>
