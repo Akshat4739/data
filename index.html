@@ -3,65 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>India's Got Latent - Premium Player</title>
+    <title>India's Got Latent - Apple Cinema</title>
     
     <!-- Plyr CSS -->
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     
     <style>
+        /* =========================================
+           APPLE TV / GLASSMORPHISM THEMING
+        ========================================= */
+        :root {
+            --plyr-color-main: #0071e3; /* Apple Blue */
+            --apple-bg: #0d0d0f;
+            --apple-glass: rgba(30, 30, 35, 0.65);
+            --apple-border: rgba(255, 255, 255, 0.12);
+        }
+
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background-color: var(--apple-bg);
+            color: #f5f5f7;
             margin: 0;
-            padding: 20px;
+            padding: 30px 20px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
         }
 
         h2 {
-            margin-bottom: 30px;
-            font-weight: 500;
-            text-align: center;
-            letter-spacing: 1px;
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(180deg, #ffffff, #a1a1a6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        /* Main layout wrapper */
+        /* Player Container */
         .player-wrapper {
             display: flex;
             flex-direction: column;
             width: 100%;
-            max-width: 1200px;
-            background: #1a1a1a;
-            border-radius: 12px;
+            max-width: 1180px;
+            background: var(--apple-glass);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--apple-border);
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
         }
 
-        /* Desktop Layout (Side by Side) */
-        @media (min-width: 800px) {
+        @media (min-width: 850px) {
             .player-wrapper {
                 flex-direction: row;
             }
         }
 
         .video-wrapper {
-            flex: 2.5; 
+            flex: 2.6; 
             position: relative;
             background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* =========================================
-           PREMIUM 0-100% LOADING UI (OVERLAY)
+           APPLE LOADING OVERLAY
         ========================================= */
         .premium-loader-overlay {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             z-index: 50;
             display: flex;
             flex-direction: column;
@@ -69,84 +88,112 @@
             justify-content: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s ease;
         }
 
         .is-buffering .premium-loader-overlay {
             opacity: 1;
         }
 
-        /* The Spinner */
-        .premium-spinner {
-            width: 45px; height: 45px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #00a8ff;
+        /* Minimal Ring Spinner */
+        .apple-spinner {
+            width: 38px;
+            height: 38px;
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            border-top-color: #ffffff;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 25px;
+            animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            margin-bottom: 20px;
         }
 
-        /* The Bar Container */
-        .premium-progress-container {
-            width: 220px;
-            height: 6px;
+        /* Track Container */
+        .apple-progress-container {
+            width: 200px;
+            height: 4px;
             background: rgba(255, 255, 255, 0.15);
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+            position: relative;
         }
 
-        /* The Fill */
-        .premium-progress-bar {
+        .apple-progress-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #00a8ff, #00ff88);
+            background: #ffffff;
             border-radius: 10px;
-            transition: width 0.2s ease-out;
-            box-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+            transition: width 0.2s ease;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
         }
 
-        /* The Text (0% to 100%) */
-        .premium-progress-text {
-            margin-top: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #ffffff;
-            letter-spacing: 2px;
-            font-family: monospace;
+        .apple-progress-text {
+            margin-top: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 0.5px;
         }
 
         @keyframes spin { 
             100% { transform: rotate(360deg); } 
         }
 
-        /* Hide Plyr's default loading spinner */
         .plyr--loading .plyr__video-wrapper::before {
             display: none !important;
         }
 
+        /* Custom Skip Controls Overlay */
+        .apple-skip-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 30;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .video-wrapper:hover .apple-skip-btn {
+            opacity: 0.8;
+        }
+
+        .apple-skip-btn:hover {
+            opacity: 1 !important;
+            transform: translateY(-50%) scale(1.1);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .skip-left { left: 20px; }
+        .skip-right { right: 20px; }
+
         /* =========================================
-           PLAYLIST & SERVER SELECTION UI
+           PLAYLIST UI
         ========================================= */
         .playlist-container {
             flex: 1; 
-            background: #151515;
-            padding: 20px;
-            border-left: 1px solid #2a2a2a;
+            background: rgba(18, 18, 22, 0.5);
+            padding: 24px;
+            border-left: 1px solid var(--apple-border);
             display: flex;
             flex-direction: column;
         }
 
         .playlist-header {
-            font-size: 1.1rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 15px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #2a2a2a;
-            color: #888;
+            margin: 0 0 16px 0;
+            color: #86868b;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
         }
 
         .playlist-items {
@@ -154,144 +201,136 @@
             flex-direction: column;
             gap: 12px;
             overflow-y: auto;
-            max-height: 500px;
+            max-height: 480px;
         }
 
         .playlist-item {
-            background: #222;
-            border: 1px solid #333;
-            padding: 15px;
-            border-radius: 8px;
-            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 14px;
+            border-radius: 12px;
+            transition: all 0.25s ease;
         }
 
         .playlist-item.active {
-            border-color: #00a8ff;
-            background: #1e293b;
+            border-color: rgba(0, 113, 227, 0.5);
+            background: rgba(0, 113, 227, 0.12);
         }
 
         .video-title {
-            font-size: 0.95rem;
-            line-height: 1.4;
+            font-size: 0.9rem;
+            font-weight: 500;
+            line-height: 1.35;
             cursor: pointer;
-            color: #ddd;
+            color: #d2d2d7;
             transition: color 0.2s;
         }
 
-        .video-title:hover {
-            color: #fff;
-        }
-
         .playlist-item.active .video-title {
-            color: #00a8ff;
+            color: #ffffff;
             font-weight: 600;
         }
 
         .server-list {
             display: flex;
             gap: 8px;
-            margin-top: 12px;
+            margin-top: 10px;
             flex-wrap: wrap;
         }
 
         .server-badge {
-            font-size: 0.75rem;
-            background: #333;
-            color: #aaa;
-            padding: 5px 10px;
-            border-radius: 4px;
+            font-size: 0.7rem;
+            background: rgba(255, 255, 255, 0.08);
+            color: #a1a1a6;
+            padding: 4px 10px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-weight: 600;
-        }
-
-        .server-badge:hover {
-            background: #444;
-            color: #fff;
+            font-weight: 500;
         }
 
         .server-badge.active {
-            background: #00a8ff;
+            background: #0071e3;
             color: #fff;
-            box-shadow: 0 0 10px rgba(0, 168, 255, 0.4);
         }
     </style>
 </head>
 <body>
 
-    <h2>INDIA’S GOT LATENT</h2>
+    <h2>India’s Got Latent</h2>
 
     <div class="player-wrapper">
         
-        <!-- Video Player Section -->
+        <!-- Video Wrapper -->
         <div class="video-wrapper" id="video-wrapper">
             
-            <!-- Premium Loading Overlay -->
+            <!-- Apple Skip Buttons -->
+            <button class="apple-skip-btn skip-left" onclick="skipTime(-10)" title="Rewind 10s">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+            </button>
+            <button class="apple-skip-btn skip-right" onclick="skipTime(10)" title="Forward 10s">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+            </button>
+
+            <!-- Loading Overlay -->
             <div class="premium-loader-overlay">
-                <div class="premium-spinner"></div>
-                <div class="premium-progress-container">
-                    <div class="premium-progress-bar" id="premium-progress-bar"></div>
+                <div class="apple-spinner"></div>
+                <div class="apple-progress-container">
+                    <div class="apple-progress-bar" id="premium-progress-bar"></div>
                 </div>
-                <div class="premium-progress-text" id="premium-progress-text">0%</div>
+                <div class="apple-progress-text" id="premium-progress-text">0%</div>
             </div>
             
-            <!-- Default Video (4K Episode 3) -->
+            <!-- Video Container -->
             <video id="player" playsinline controls>
                 <source src="https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA's%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv" type="video/webm" />
             </video>
         </div>
 
-        <!-- Playlist & Servers Section -->
+        <!-- Playlist Section -->
         <div class="playlist-container">
             <h3 class="playlist-header">Episodes</h3>
             
             <div class="playlist-items">
-                
-                <!-- Episode 3 (4K MKV Direct Upload) -->
                 <div class="playlist-item active" id="ep3">
                     <div class="video-title" onclick="playEpisode('ep3', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA\'s%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv', 'video/webm')">
-                        S2 Bonus EP1 4K ft. Raghav Juyal, Munawar, Niharika NM, Rohan Joshi
+                        S2 Bonus EP1 (4K Ultra HD)
                     </div>
                     <div class="server-list">
-                        <span class="server-badge active" onclick="playEpisode('ep3', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA\'s%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv', 'video/webm', this)">Server 1 (GitHub 4K)</span>
+                        <span class="server-badge active" onclick="playEpisode('ep3', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/INDIA\'s%20GOT%20LATENT%20S2%20Bonus%20EP1%20Ft.%20Raghav%20Juyal%2C%20Munawar%20Niharika%20NM%2C%20Rohan%20Joshi%202160p.mkv', 'video/webm', this)">Server 1 (GitHub)</span>
                     </div>
                 </div>
 
-                <!-- Episode 1 -->
                 <div class="playlist-item" id="ep1">
                     <div class="video-title" onclick="playEpisode('ep1', 'https://github.com/Akshat4739/data/raw/refs/heads/main/INDIA%E2%80%99S%20GOT%20LATENT%20S2%20Bonus%20EP1%20ft%20%20Raghav%20Juyal,%20Munawar,%20Niharika%20NM,%20Rohan%20Joshi%20MEMBERS%20ONLY%20216.mp4', 'video/mp4')">
-                        S2 Bonus EP1 ft. Raghav Juyal, Munawar, Niharika NM, Rohan Joshi (SD)
+                        S2 Bonus EP1 (Standard HD)
                     </div>
                     <div class="server-list">
                         <span class="server-badge active" onclick="playEpisode('ep1', 'https://github.com/Akshat4739/data/raw/refs/heads/main/INDIA%E2%80%99S%20GOT%20LATENT%20S2%20Bonus%20EP1%20ft%20%20Raghav%20Juyal,%20Munawar,%20Niharika%20NM,%20Rohan%20Joshi%20MEMBERS%20ONLY%20216.mp4', 'video/mp4', this)">Server 1 (GitHub)</span>
                     </div>
                 </div>
 
-                <!-- Episode 2 -->
                 <div class="playlist-item" id="ep2">
                     <div class="video-title" onclick="playEpisode('ep2', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm')">
-                        E03 Latent BTS ft. Raghu Ram, Tanmay Bhat, Vishal Dadlani
+                        E03 Latent BTS
                     </div>
                     <div class="server-list">
-                        <span class="server-badge active" onclick="playEpisode('ep2', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm', this)">Server 1 (GitHub)</span>
-                        <span class="server-badge" onclick="playEpisode('ep2', 'https://archive.org/download/e-03-latent/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm', this)">Server 2 (Archive)</span>
+                        <span class="server-badge active" onclick="playEpisode('ep2', 'https://media.githubusercontent.com/media/Akshat4739/data/refs/heads/main/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm', this)">Server 1</span>
+                        <span class="server-badge" onclick="playEpisode('ep2', 'https://archive.org/download/e-03-latent/E03_Latent_BTS_ft_Raghu_Ram%2C_Tanmay_Bhat%2C_Vishal_Dadlani_MEMBERS.mkv', 'video/webm', this)">Server 2</span>
                     </div>
                 </div>
-
             </div>
         </div>
 
     </div>
 
-    <!-- Plyr JS Initialization -->
+    <!-- Scripts -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         let player;
         let bufferInterval;
-        let currentBuffer = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize Plyr
             player = new Plyr('#player', {
                 controls: [
                     'play-large', 'play', 'progress', 'current-time', 
@@ -300,54 +339,63 @@
                 settings: ['speed', 'loop']
             });
 
-            // Premium Loader / Buffer Logic
             const videoWrapper = document.getElementById('video-wrapper');
             const progressBar = document.getElementById('premium-progress-bar');
             const progressText = document.getElementById('premium-progress-text');
 
             function updateBufferUI(percent) {
-                const p = Math.floor(percent);
+                const p = Math.min(Math.max(Math.floor(percent), 0), 100);
                 progressBar.style.width = p + '%';
                 progressText.innerText = p + '%';
             }
 
-            function startBuffering() {
-                if(videoWrapper.classList.contains('is-buffering')) return;
+            // Real Buffer-Tracking Engine
+            function trackActualBuffering() {
+                const media = player.media;
+                if (!media) return;
 
-                videoWrapper.classList.add('is-buffering');
-                currentBuffer = 0;
-                updateBufferUI(0);
-                
-                clearInterval(bufferInterval);
-                
-                bufferInterval = setInterval(() => {
-                    if (currentBuffer < 98) {
-                        let increment = (100 - currentBuffer) * 0.15;
-                        currentBuffer += Math.max(increment, 1);
-                        if (currentBuffer > 99) currentBuffer = 99;
-                        updateBufferUI(currentBuffer);
+                if (media.buffered.length > 0 && media.duration > 0) {
+                    // Get highest buffered time chunk
+                    const bufferedEnd = media.buffered.end(media.buffered.length - 1);
+                    const duration = media.duration;
+                    const percent = (bufferedEnd / duration) * 100;
+
+                    updateBufferUI(percent);
+
+                    if (percent >= 99 || media.readyState >= 3) {
+                        finishBuffering();
                     }
-                }, 150);
+                }
+            }
+
+            function startBuffering() {
+                videoWrapper.classList.add('is-buffering');
+                clearInterval(bufferInterval);
+                bufferInterval = setInterval(trackActualBuffering, 200);
             }
 
             function finishBuffering() {
-                if (!videoWrapper.classList.contains('is-buffering')) return;
-                
                 updateBufferUI(100);
                 clearInterval(bufferInterval);
-                
                 setTimeout(() => {
                     videoWrapper.classList.remove('is-buffering');
-                }, 350); 
+                }, 300);
             }
 
             player.on('waiting', startBuffering);
             player.on('playing', finishBuffering);
             player.on('canplay', finishBuffering);
-            player.on('pause', finishBuffering); 
+            player.on('progress', trackActualBuffering);
         });
 
-        // Playlist and Server Switching Logic
+        // Skip Handler (Rewind / Fast Forward)
+        function skipTime(seconds) {
+            if (player) {
+                player.forward(seconds);
+            }
+        }
+
+        // Episode Switcher
         function playEpisode(epId, src, type, badgeElement = null) {
             document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
             document.getElementById(epId).classList.add('active');
@@ -356,33 +404,18 @@
                 const parent = badgeElement.closest('.server-list');
                 parent.querySelectorAll('.server-badge').forEach(el => el.classList.remove('active'));
                 badgeElement.classList.add('active');
-            } else {
-                const firstBadge = document.querySelector(`#${epId} .server-badge`);
-                if (firstBadge) {
-                    document.querySelectorAll(`#${epId} .server-badge`).forEach(el => el.classList.remove('active'));
-                    firstBadge.classList.add('active');
-                }
             }
 
             const videoWrapper = document.getElementById('video-wrapper');
-            videoWrapper.classList.remove('is-buffering');
-            setTimeout(() => { player.elements.container.dispatchEvent(new Event('waiting')); }, 10);
+            videoWrapper.classList.add('is-buffering');
 
             player.source = {
                 type: 'video',
-                sources: [
-                    {
-                        src: src,
-                        type: type, 
-                    }
-                ]
+                sources: [{ src: src, type: type }]
             };
 
-            player.play().catch(error => {
-                console.log("Autoplay prevented by browser.");
-            });
+            player.play().catch(() => {});
         }
     </script>
-
 </body>
 </html>
